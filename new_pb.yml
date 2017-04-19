@@ -1,0 +1,70 @@
+---
+- hosts: localhost
+  vars:
+    vm: "vms/1000000000029"
+    tags:
+      - { category: "department", name: "finance"}
+      - { category: "lifecycle", name: "retire_full"}
+
+  tasks:
+    - debug: var=manageiq.api_url
+    - debug: var=manageiq.api_token
+    - name: Set the single vm tag URL
+      set_fact:
+        vm_tag_url: "{{ manageiq.api_url }}/api/{{ vm }}/tags"
+
+    - debug: var=vm_tag_url
+    - name: Set the tags for a single vm
+      uri:
+        url: "{{ vm_tag_url }}"
+        method: POST
+        body_format: json
+        body:
+          action: assign
+          resources : "{{ tags }}"
+        validate_certs: False
+        headers:
+          X-Auth-Token: "{{ manageiq.api_token }}"
+          Content-Type: "application/json"
+        status_code: 200
+      register: output
+
+    - debug: var=output.json.results[0].success
+
+    - name: Check if the VM was successfully tagged
+      fail: msg="{{output.json.results[0].message}}"
+      when: output.json.results[0].success == false
+
+# Bulk tagging
+#
+    - name: Set the bulk tag URL
+      set_fact:
+        bulk_tag_url: "{{ manageiq.api_url }}/api/vms"
+
+    - name: Set the array for bulk tagging
+      set_fact:
+        bulk_tags: "{{ bulk_tags|default([]) + [ { 'href': item, 'tags': tags } ] }}"
+      with_items:
+        - "api/{{ vm }}"
+        - "api/vms/1000000000045"
+ 
+    - name: Set the bulk tag
+      uri:
+        url: "{{ bulk_tag_url }}"
+        method: POST
+        body_format: json
+        body:
+          action: assign_tags
+          resources : "{{ bulk_tags }}"
+        validate_certs: False
+        headers:
+          X-Auth-Token: "{{ manageiq.api_token }}"
+          Content-Type: "application/json"
+        status_code: 200
+      register: output
+
+    - debug: var=output.json.results[0].success
+
+    - name: Check if the VM was successfully bulk tagged
+      fail: msg="{{output.json.results[0].message}}"
+      when: output.json.results[0].success == false
