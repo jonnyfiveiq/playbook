@@ -5,9 +5,9 @@
     - debug: var=manageiq.api_token
     - debug: var=manageiq.service
     - debug: var=manageiq.event_target
-    - debug: var=manageiq.firstname
-    - debug: var=manageiq.lastname
-    - debug: var=manageiq.postcode
+    - debug: var=firstname
+    - debug: var=lastname
+    - debug: var=postcode
 
     - name: Set the Service URL
       set_fact:
