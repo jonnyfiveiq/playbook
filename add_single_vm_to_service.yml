@@ -5,6 +5,10 @@
     - debug: var=manageiq.api_token
     - debug: var=manageiq.service
     - debug: var=manageiq.event_target
+    - debug: var=manageiq.firstname
+    - debug: var=manageiq.lastname
+    - debug: var=manageiq.postcode
+
     - name: Set the Service URL
       set_fact:
         svc_url: "/api/{{ manageiq.service }}"
